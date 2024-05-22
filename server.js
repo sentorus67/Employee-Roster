@@ -23,12 +23,6 @@ const pool = new Pool(
 pool.connect();
 
 function grabDepartment(){
-  let department=
-}
-
-function addRole(){
-  let title;
-  let salary;
   let department=[];
   pool.query('SELECT * FROM department;', function (err, res) {
     for (let index = 0; index < res.rows.length; index++) {
@@ -36,6 +30,11 @@ function addRole(){
       department.push(element.dep_name);
      }
   });
+  return department;
+}
+
+function addRole(){
+ 
   inquirer
   .prompt([
     {
@@ -52,7 +51,7 @@ function addRole(){
       type:'list',
       message: "What department does this take place in?",
       name: "roleDepartment",
-      choices: department
+      choices: grabDepartment()
     }
 
   ])
@@ -63,6 +62,29 @@ function addRole(){
   })
 }
 
+function addDepartment(){
+  let totalDep=grabDepartment();
+  
+
+  inquirer
+  .prompt([
+    {
+      type: 'input',
+      message: 'What is the name of the new Department',
+      name: 'departmentName'
+    }
+  ])
+  .then((response)=>{
+    totalDep= (totalDep.length+1)+':';
+    newDepartment=(totalDep)+response.departmentName;
+
+    console.log(`Adding ${newDepartment} to the the list of departments`)
+    pool.query(`INSERT INTO department(dep_name) VALUES ('${newDepartment}');`)
+  }
+  
+  )
+}
+
 function updateRole(){
   let roleRoster=[];
   pool.query('SELECT * FROM roles;', function (err, res) {
@@ -71,7 +93,45 @@ function updateRole(){
       roleRoster.push(element);
      }
   })
-}
+  
+  inquirer
+  .prompt([
+    {
+      type: 'list',
+      message: 'Choose the role to update',
+      name: 'roleUpdate',
+      choices: roleRoster
+    }
+  ])
+  .then((response1) =>{
+
+    inquirer
+    .prompt([ 
+      {
+        type: 'input',
+        message: 'What is the new title of the role?',
+        name: 'roleTitle'
+      },
+      {
+        type: 'input',
+        message: 'What is the new salary of the role?',
+        name: 'roleSalary'
+      },
+      {
+        type: 'list',
+        message: 'What department will this role be in?',
+        name: 'roleDepartment',
+        choices: grabDepartment()
+      }
+
+    ])
+    .then((response2)=>{
+      console.log(`${response1.roleRoster} will be updated to ('${response2.roleTitle}',${response2.roleSalary},${response2.roleDepartment})`);
+    })
+
+
+  } )
+};
 
 inquirer
 .prompt([
@@ -108,4 +168,15 @@ inquirer
       });
 
     }
-    else if (response.managerActi
+    else if (response.managerAction == 'Add Role'){
+      addRole();
+    }
+    else if (response.managerAction == 'View all departments'){
+      pool.query('SELECT * FROM department;', function (err, res) {
+        console.log(res.rows);
+      });
+    }
+    else if (response.managerAction == 'Add Departments'){
+      addDepartment();
+    }
+});
