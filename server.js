@@ -27,10 +27,34 @@ function grabDepartment(){
   pool.query('SELECT * FROM department;', function (err, res) {
     for (let index = 0; index < res.rows.length; index++) {
       const element = res.rows[index];
-      department.push(element.dep_name);
+      department.push(JSON.stringify(element));
      }
-  });
+  })
   return department;
+}
+
+function grabRole(){
+  let roleRoster=[];
+  pool.query('SELECT * FROM roles;', function (err, res) {
+    for (let index = 0; index < res.rows.length; index++) {
+      const element = res.rows[index];
+      roleRoster.push(JSON.stringify(element));
+    }
+  })
+  return roleRoster;
+}
+
+function grabEmployee(){
+  pool.query('SELECT * FROM employee;', function (err, res) {
+    for (let index = 0; index < res.rows.length; index++) {
+      console.log(res.rows.length);
+      const element = res.rows[index]
+      console.log(element)
+      employeeRoster.push(JSON.stringify(element))
+    }
+    return employeeRoster;
+  })
+  //return employeeRoster;
 }
 
 function addRole(){
@@ -64,8 +88,6 @@ function addRole(){
 
 function addDepartment(){
   let totalDep=grabDepartment();
-  
-
   inquirer
   .prompt([
     {
@@ -85,52 +107,89 @@ function addDepartment(){
   )
 }
 
-function updateRole(){
-  let roleRoster=[];
-  pool.query('SELECT * FROM roles;', function (err, res) {
-    for (let index = 0; index < res.rows.length; index++) {
-      const element = res.rows[index];
-      roleRoster.push(element);
-     }
+function addEmployee(){
+
+  inquirer
+  .prompt([
+    {
+      type:'input',
+      message: "What is the first name of the employee?",
+      name: "employeeFName"
+    },
+    {
+      type:'input',
+      message: "What is the last name of the employee?",
+      name: "employeeLName"
+    },
+    {
+      type:'list',
+      message: "What is there role in the company?",
+      name: "roleDepartment",
+      choices: grabRole()
+    }
+
+  ])
+  .then((response)=> {
+    let depart=JSON.parse(response.roleDepartment)
+    console.log(`the deparment is ${depart.title}`);
+    
+   console.log(`we are going add the Employee ${response.employeeFName} ${response.employeeLName} to the role number ${depart.id}`);
+    pool.query(`INSERT INTO employee(first_name,last_name,role_id) VALUES ('${response.employeeFName}','${response.employeeLName}',${depart.id});`)
   })
-  
+
+}
+
+
+async function updateEmployee(){
+let employeeRoster=[];
+
+  pool.query('SELECT * FROM employee;', function (err, res) {
+    for (let index = 0; index < res.rows.length; index++) {
+      console.log(res.rows.length);
+      const element = res.rows[index]
+      console.log(element)
+      employeeRoster.push(JSON.stringify(element))
+    }
+    
+
   inquirer
   .prompt([
     {
       type: 'list',
-      message: 'Choose the role to update',
+      message: 'Choose the employee to update',
       name: 'roleUpdate',
-      choices: roleRoster
+      choices: employeeRoster
     }
   ])
   .then((response1) =>{
+    employeeUpdater=JSON.parse(response1.roleUpdate);
 
     inquirer
     .prompt([ 
       {
         type: 'input',
-        message: 'What is the new title of the role?',
-        name: 'roleTitle'
+        message: `Does ${employeeUpdater.first_name} have a new first name?`,
+        name: 'empFName'
       },
       {
         type: 'input',
-        message: 'What is the new salary of the role?',
-        name: 'roleSalary'
+        message: `Does ${employeeUpdater.first_name} have a new last name? (previously ${employeeUpdater.last_name})`,
+        name: 'empLName'
       },
       {
         type: 'list',
-        message: 'What department will this role be in?',
-        name: 'roleDepartment',
-        choices: grabDepartment()
+        message: 'What is there new role in the company?',
+        name: 'newRole',
+        choices: grabRole()
       }
 
     ])
     .then((response2)=>{
-      console.log(`${response1.roleRoster} will be updated to ('${response2.roleTitle}',${response2.roleSalary},${response2.roleDepartment})`);
+      let roleUpdate=JSON.parse(response2.newRole);
+      console.log(`${employeeUpdater.first_name} ${employeeUpdater.last_name} will be updated to ('${response2.empFName}',${response2.empLName}) with the role of ${roleUpdate.id})`);
     })
-
-
   } )
+}) 
 };
 
 inquirer
@@ -140,7 +199,7 @@ inquirer
         type: 'list',
         message: 'what would you like to do',
         name: 'managerAction',
-        choices:['View employees','Add Employees','Update Employees','View all Roles','Add Role','View all departments','Add Departments']
+        choices:['View employees','Add Employees','Update Employee','View all Roles','Add Role','View all departments','Add Departments']
     }
   
 ])
@@ -152,17 +211,16 @@ inquirer
     pool.query('SELECT * FROM employee;', function (err, res) {
       console.log(res.rows);
     });
+
     }
     else if (response.managerAction == 'Add Employees'){
-   
+      addEmployee();
     }
     else if (response.managerAction == 'Update Employee'){
-
+      updateEmployee();
     }
     else if (response.managerAction == 'View all Roles'){
-
-
-
+ 
       pool.query('SELECT * FROM roles;', function (err, res) {
         console.log(res.rows);
       });
@@ -175,6 +233,7 @@ inquirer
       pool.query('SELECT * FROM department;', function (err, res) {
         console.log(res.rows);
       });
+     
     }
     else if (response.managerAction == 'Add Departments'){
       addDepartment();
