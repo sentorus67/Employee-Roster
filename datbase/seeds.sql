@@ -14,12 +14,12 @@ VALUES
     ('Customer Support',34000.00,4),
     ('Task Handler',128000.23,5),
     ('cashier',24.12,4),
-    ('infrasturctal architect',50000.00,3),
+    ('infrasturctal architect',50000.00,3);
     
 
-INSERT INTO employee(first_name,last_name,role_id, manager_id)
+INSERT INTO employee(first_name,last_name,role_id,manager_id)
     VALUES
-    ('Ronaldo','Guiterez',1,1) 
+    ('Ronaldo','Guiterez',1,1), 
     ('Bennet','Hillenburg',5,1),
     ('Collin','Hung',6,1),
     ('Jennifer','Frottenmire',6,3),

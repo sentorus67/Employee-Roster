@@ -80,9 +80,11 @@ function addRole(){
 
   ])
   .then((response)=> {
-    let departmentNum=String(response.roleDepartment).substring(0,1);
-    console.log(`we are going add the role ${response.roleTitle} with a salary of ${response.roleSalary} in the department ${departmentNum}`);
-    pool.query(`INSERT INTO roles(title,salary,department) VALUES ('${response.roleTitle}',${response.roleSalary},${departmentNum});`)
+    let departmentNum=JSON.parse(response.roleDepartment);
+
+    //let departmentNum=String(response.roleDepartment).substring(0,1);
+    console.log(`we are going add the role ${response.roleTitle} with a salary of ${response.roleSalary} in the department ${departmentNum.id}`);
+    pool.query(`INSERT INTO roles(title,salary,department) VALUES ('${response.roleTitle}',${response.roleSalary},${departmentNum.id});`)
   })
 }
 
