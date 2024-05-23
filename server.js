@@ -122,6 +122,11 @@ function addEmployee(){
       name: "employeeLName"
     },
     {
+      type: 'input',
+      message: 'What is their manager id(enter 1-3)?',
+      name: 'employeeManId'
+    },
+    {
       type:'list',
       message: "What is there role in the company?",
       name: "roleDepartment",
@@ -134,13 +139,13 @@ function addEmployee(){
     console.log(`the deparment is ${depart.title}`);
     
    console.log(`we are going add the Employee ${response.employeeFName} ${response.employeeLName} to the role number ${depart.id}`);
-    pool.query(`INSERT INTO employee(first_name,last_name,role_id) VALUES ('${response.employeeFName}','${response.employeeLName}',${depart.id});`)
+    pool.query(`INSERT INTO employee(first_name,last_name,role_id,manager_id) VALUES ('${response.employeeFName}','${response.employeeLName}',${depart.id},${response.employeeManId});`)
   })
 
 }
 
 
-async function updateEmployee(){
+function updateEmployee(){
 let employeeRoster=[];
 
   pool.query('SELECT * FROM employee;', function (err, res) {
@@ -187,6 +192,7 @@ let employeeRoster=[];
     .then((response2)=>{
       let roleUpdate=JSON.parse(response2.newRole);
       console.log(`${employeeUpdater.first_name} ${employeeUpdater.last_name} will be updated to ('${response2.empFName}',${response2.empLName}) with the role of ${roleUpdate.id})`);
+      pool.query(`UPDATE employee SET first_name ='${response2.empFName}', last_name='${response2.empLName}', role_id='${roleUpdate.id}' WHERE id='${employeeUpdater.id}';`);
     })
   } )
 }) 
@@ -208,7 +214,7 @@ inquirer
 
     if (response.managerAction == 'View employees'){
         
-    pool.query('SELECT * FROM employee;', function (err, res) {
+    pool.query('SELECT * FROM employee ORDER BY id;', function (err, res) {
       console.log(res.rows);
     });
 
